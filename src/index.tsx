@@ -80,10 +80,7 @@ export default definePlugin(() => {
     WhiteBoardUtil.setProvider(PluginSettings.settings.settings.remote.provider);
     Listeners.bind();
 
-    routerHook.addRoute(Constants.PATH_PLUGIN_LOG, () => <ViewLogsPage forSync={false} />, {
-      exact: true
-    });
-    routerHook.addRoute(Constants.PATH_SYNC_LOG, () => <ViewLogsPage forSync={true} />, {
+    routerHook.addRoute(Constants.PATH_PLUGIN_LOG, () => <ViewLogsPage />, {
       exact: true
     });
     routerHook.addRoute(Constants.PATH_CONFIGURE_PATHS, () => <ConfigurePathsPage />, {
@@ -118,7 +115,7 @@ export default definePlugin(() => {
       Listeners.unbind();
 
       routerHook.removeRoute(Constants.PATH_PLUGIN_LOG);
-      routerHook.removeRoute(Constants.PATH_SYNC_LOG);
+      routerHook.removeRoute(Constants.PATH_PLUGIN_LOG);
       routerHook.removeRoute(Constants.PATH_CONFIGURE_PROVIDER);
       routerHook.removeRoute(Constants.PATH_CONFIGURE_PATHS);
       routerHook.removeRoute(Constants.PATH_SUDO_PASSWORD);

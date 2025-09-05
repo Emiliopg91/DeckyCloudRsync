@@ -4,11 +4,9 @@ import {
   Navigation,
   PanelSection,
   PanelSectionRow,
-  TextField,
   showModal
 } from '@decky/ui';
 import { Translator } from 'decky-plugin-framework';
-import { debounce } from 'lodash';
 import { FC, useCallback, useContext, useState } from 'react';
 import { FaCopy, FaPen, FaTrash } from 'react-icons/fa';
 
@@ -19,20 +17,11 @@ import { Constants } from '../utils/constants';
 import { PluginSettings } from '../utils/pluginSettings';
 import { WhiteBoardUtil } from '../utils/whiteboard';
 
-const saveDirectory = debounce((newVal: string): void => {
-  PluginSettings.setRemoteDirectory(newVal);
-}, 1000);
-
 export const ConfigurePathsPage: FC = () => {
   const { syncInProgress } = useContext(GlobalContext);
 
-  const [remoteDir, setRemoteDir] = useState(PluginSettings.getRemoteDirectory());
   const [entries, setEntries] = useState(PluginSettings.getEntries());
 
-  const onDirChange = useCallback((newVal: string): void => {
-    setRemoteDir(() => newVal);
-    saveDirectory(newVal);
-  }, []);
   const onDeleteEntry = useCallback((key: string): void => {
     setEntries(PluginSettings.removeEntry(key));
   }, []);
@@ -42,14 +31,6 @@ export const ConfigurePathsPage: FC = () => {
 
   return (
     <div style={{ marginTop: '50px' }}>
-      <PanelSection title={Translator.translate('cloud.save.path')}>
-        <TextField
-          disabled={false}
-          value={remoteDir}
-          onChange={(e) => onDirChange(e.target.value)}
-          onBlur={(e) => onDirChange(e.target.value)}
-        />
-      </PanelSection>
       <PanelSection title={Translator.translate('sync.entries')}>
         <div style={{ paddingLeft: '10px' }}>
           <PanelSectionRow>

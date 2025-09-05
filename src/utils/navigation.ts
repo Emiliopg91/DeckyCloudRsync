@@ -12,7 +12,7 @@ export class NavigationUtil {
       logs = Translator.translate('no.available.logs');
     }
     WhiteBoardUtil.setLog(logs);
-    Navigation.Navigate(Constants.PATH_SYNC_LOG);
+    Navigation.Navigate(Constants.PATH_PLUGIN_LOG);
     Navigation.CloseSideMenus();
   }
 }

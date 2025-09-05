@@ -10,7 +10,6 @@ import {
   Translator
 } from 'decky-plugin-framework';
 
-import { SyncMode } from '../models/syncModes';
 import { BackendUtils } from './backend';
 import { NavigationUtil } from './navigation';
 import { WhiteBoardUtil } from './whiteboard';
@@ -74,48 +73,36 @@ export class Listeners {
       }
     }).unsubscribe;
 
-    Listeners.unsubscribeSyncStarted = Backend.backend_handle('syncStarted', (mode: SyncMode) => {
-      switch (mode) {
-        case SyncMode.NORMAL:
-          Toast.toast(Translator.translate('synchronizing.savedata'));
-          break;
-        case SyncMode.RESYNC:
-          Toast.toast(Translator.translate('resynchronizing.savedata'));
-          break;
-        case SyncMode.FORCE:
-          Toast.toast(Translator.translate('forcing.sync'));
-          break;
-      }
+    Listeners.unsubscribeSyncStarted = Backend.backend_handle('syncStarted', () => {
+      Toast.toast(Translator.translate('synchronizing.savedata'));
       WhiteBoardUtil.setSyncInProgress(true);
     });
 
     Listeners.unsubscribeSyncEnd = Backend.backend_handle(
       'syncEnded',
-      (returnCode: number, elapsed: number) => {
+      (success: boolean, elapsed: number) => {
         WhiteBoardUtil.setSyncInProgress(false);
 
-        if (returnCode > -1) {
-          let result = false;
-          if (returnCode != 0) {
-            Toast.toast(Translator.translate('sync.failed'), 5000, () => {
+        let result = false;
+        if (success) {
+          result = true;
+          Toast.toast(
+            Translator.translate('sync.succesful', { time: Math.round(elapsed) / 1000 }),
+            2000,
+            () => {
               NavigationUtil.openLogPage(true);
-            });
-          } else {
-            result = true;
-            Toast.toast(
-              Translator.translate('sync.succesful', { time: Math.round(elapsed) / 1000 }),
-              2000,
-              () => {
-                NavigationUtil.openLogPage(true);
-              }
-            );
-          }
-          WhiteBoardUtil.setSyncInProgress(false);
-          if (WhiteBoardUtil.getSyncRelease()) {
-            WhiteBoardUtil.getSyncRelease()!(result);
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            WhiteBoardUtil.setSyncRelease(() => {});
-          }
+            }
+          );
+        } else {
+          Toast.toast(Translator.translate('sync.failed'), 5000, () => {
+            NavigationUtil.openLogPage(true);
+          });
+        }
+        WhiteBoardUtil.setSyncInProgress(false);
+        if (WhiteBoardUtil.getSyncRelease()) {
+          WhiteBoardUtil.getSyncRelease()!(result);
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          WhiteBoardUtil.setSyncRelease(() => {});
         }
       }
     );

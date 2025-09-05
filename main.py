@@ -5,8 +5,8 @@ import decky  # pylint: disable=import-error
 from plugin_config import PluginConfig
 from plugin_update import PluginUpdate
 from plugin_logger import PluginLogger
-from utils.rclone import RCloneManager
 from utils.processes import Processes
+from utils.cryptography import Cryptography
 from utils.fs_sync import FsSync
 from utils.logs import LogManager
 from utils.constants import Constants
@@ -20,6 +20,8 @@ class Plugin:
     async def _main(self):
         PluginLogger.configure_logger()
         decky.logger.info("Running " + decky.DECKY_PLUGIN_NAME)
+        Cryptography.initialize()
+        PluginConfig.initialize({"settings.remote.password"})
 
     async def _unload(self):
         decky.logger.info("Unloading " + decky.DECKY_PLUGIN_NAME)
@@ -47,20 +49,15 @@ class Plugin:
         """Log line to file"""
         return PluginLogger.log(level, msg)
 
-    # RClone
-    async def configure(self, backend_type: str):
-        """Configure rclone backend"""
-        return await RCloneManager.configure(backend_type)
-
     # FileSystem sync
     async def copy_to_local(self, directory: str) -> int:
         """Copy files from remote to local locally"""
         return FsSync.copyFolderToLocal(directory)
 
     # SyncManager
-    async def sync(self, winner: str, mode: int):
+    async def sync(self, winner_remote: bool):
         """Peform sync"""
-        await SyncManager.synchronize(winner, mode)
+        await SyncManager.synchronize(winner_remote)
 
     # Processes
     async def send_signal(self, pid: int, s: str):
@@ -89,6 +86,14 @@ class Plugin:
     async def get_remote_dir(self) -> str:
         """Get remote dir"""
         return Constants.remote_dir
+
+    async def encrypt(self, plain: str) -> str:
+        """Encrypt string"""
+        return Cryptography.encrypt_string(plain)
+
+    async def decrypt(self, crypted: str) -> str:
+        """Encrypt string"""
+        return Cryptography.decrypt_string(crypted)
 
     # Plugin update
     async def ota_update(self, sudo_pwd=None):

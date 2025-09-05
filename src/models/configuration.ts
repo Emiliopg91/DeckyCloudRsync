@@ -8,7 +8,10 @@ export interface Settings {
 }
 
 export interface Remote {
-  provider: string;
+  user: string;
+  password: string;
+  host: string;
+  port: string;
   directory: string;
 }
 

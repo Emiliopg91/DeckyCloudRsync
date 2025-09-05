@@ -3,8 +3,6 @@ import { Mutex } from 'async-mutex';
 import { Backend, Logger, Toast, Translator } from 'decky-plugin-framework';
 
 import { Signal } from '../models/signals';
-import { SyncMode } from '../models/syncModes';
-import { Winner } from '../models/winners';
 import { NavigationUtil } from './navigation';
 import { WhiteBoardUtil } from './whiteboard';
 
@@ -17,6 +15,7 @@ export class BackendUtils {
   public static getConfigUrl(): Promise<string> {
     return Backend.backend_call<[], string>('get_config_url');
   }
+
   public static async getPluginLog(): Promise<string> {
     return Backend.backend_call<[], string>('get_plugin_log');
   }
@@ -25,12 +24,8 @@ export class BackendUtils {
     return Backend.backend_call<[], string>('get_last_sync_log');
   }
 
-  public static async configure(backend_type: string): Promise<number> {
-    return Backend.backend_call<[backend_type: string], number>('configure', backend_type);
-  }
-
-  public static async sync(winner: Winner, mode: SyncMode): Promise<number> {
-    return Backend.backend_call<[winner: string, mode: number], number>('sync', winner, mode);
+  public static async sync(winner_remote: boolean): Promise<number> {
+    return Backend.backend_call<[winner_remote: boolean], number>('sync', winner_remote);
   }
 
   public static async fsSync(localToRemote: boolean): Promise<void> {
@@ -49,7 +44,7 @@ export class BackendUtils {
     return Backend.backend_call<[], string>('get_remote_dir');
   }
 
-  public static async doSynchronization(winner: Winner, mode: SyncMode): Promise<boolean> {
+  public static async doSynchronization(winner_remote: boolean): Promise<boolean> {
     if (BackendUtils.SYNC_MUTEX.isLocked()) {
       Toast.toast(Translator.translate('waiting.previous.sync'));
     }
@@ -64,7 +59,7 @@ export class BackendUtils {
               resolve(result);
             });
 
-            await BackendUtils.sync(winner, mode);
+            await BackendUtils.sync(winner_remote);
           } catch (e) {
             Logger.error('Sync exception', e);
             Toast.toast(Translator.translate('sync.failed'), 5000, () => {
@@ -92,11 +87,7 @@ export class BackendUtils {
       }
 
       if (WhiteBoardUtil.getIsConnected()) {
-        await BackendUtils.doSynchronization(
-          onStart ? Winner.REMOTE : Winner.LOCAL,
-          SyncMode.NORMAL
-        );
-
+        await BackendUtils.doSynchronization(onStart);
         await BackendUtils.sendSignal(pid, Signal.SIGCONT);
       } else {
         if (!alreadyWaited) {
@@ -121,7 +112,7 @@ export class BackendUtils {
         }
       }
     } else {
-      await BackendUtils.doSynchronization(onStart ? Winner.REMOTE : Winner.LOCAL, SyncMode.NORMAL);
+      await BackendUtils.doSynchronization(onStart);
     }
   }
 

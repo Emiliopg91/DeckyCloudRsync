@@ -172,7 +172,7 @@ class FsSync:
         return f"{speed_bytes_per_sec:.2f} B/s"
 
     @staticmethod
-    def copyToRemote():
+    def copyToLocal():
         """Copy entries to remote"""
         decky.logger.info("")
         decky.logger.info("Copying to remote")
@@ -196,7 +196,7 @@ class FsSync:
                 entry_name,
                 inclusions,
                 exclusions,
-                Constants.remote_dir + "/" + entry_name,
+                Constants.local_dir + "/" + entry_name,
                 folder_path,
             )
             created_files += c
@@ -222,7 +222,7 @@ class FsSync:
         decky.logger.info("")
 
     @staticmethod
-    def copyFromRemote():
+    def copyFromLocal():
         """Copy entries from remote"""
         decky.logger.info("")
         decky.logger.info("Copying to local")
@@ -247,7 +247,7 @@ class FsSync:
                 inclusions,
                 exclusions,
                 folder_path,
-                Constants.remote_dir + "/" + entry_name,
+                Constants.local_dir + "/" + entry_name,
             )
             created_files += c
             modified_files += m
@@ -306,7 +306,7 @@ class FsSync:
         # Process each entry in the JSON
         for entry_name, details in sorted(data.items()):
             if entry_name == directory:
-                src_path = Constants.remote_dir + "/" + entry_name
+                src_path = Constants.local_dir + "/" + entry_name
                 dst_path = details["folder"]
                 decky.logger.info(f"  Destination folder: {dst_path}")
 

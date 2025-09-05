@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 import json
+from utils.cryptography import Cryptography
 
 import decky  # pylint: disable=import-error
 
@@ -13,6 +14,13 @@ class PluginConfig:
     package_json_file = Path(decky.DECKY_PLUGIN_DIR) / "package.json"
     config_dir = Path(decky.DECKY_PLUGIN_SETTINGS_DIR)
     cfg_property_file = config_dir / "plugin.json"
+    crypted = []
+
+    @staticmethod
+    def initialize(crypted=None):
+        if crypted is not None:
+            for c in crypted:
+                PluginConfig.crypted.append(c)
 
     @staticmethod
     def convert_value(value):
@@ -30,19 +38,6 @@ class PluginConfig:
                 except ValueError:
                     return value
         return value
-
-    @staticmethod
-    def flatten_json(nested_json, parent_key=""):
-        """Flatten json to dict"""
-        items = {}
-        for key, value in nested_json.items():
-            new_key = parent_key + "." + key if parent_key else key
-            if isinstance(value, dict):
-                # Recursión si el valor es otro diccionario
-                items.update(PluginConfig.flatten_json(value, new_key))
-            else:
-                items[new_key] = value
-        return items
 
     @staticmethod
     def get_config():
@@ -64,12 +59,19 @@ class PluginConfig:
                 else:
                     flat_config[new_key] = value
 
+        for c in PluginConfig.crypted:
+            if c in flat_config:
+                flat_config[c] = Cryptography.decrypt_string(flat_config[c])
+
         return flat_config
 
     @staticmethod
     def set_config(key: str, value):
         """Set configuration entry"""
         value = PluginConfig.convert_value(value)
+        if key in PluginConfig.crypted:
+            value = Cryptography.encrypt_string(value)
+
         with open(PluginConfig.cfg_property_file, "r+", encoding="utf-8") as json_file:
             data = json.load(json_file)
 
@@ -127,6 +129,8 @@ class PluginConfig:
                 else:
                     return default
 
+            if name in PluginConfig.crypted:
+                d = Cryptography.decrypt_string(d)
             return d
 
     @staticmethod

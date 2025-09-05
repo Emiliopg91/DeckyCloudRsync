@@ -1,94 +1,135 @@
-import {
-  ButtonItem,
-  ConfirmModal,
-  Navigation,
-  PanelSection,
-  PanelSectionRow,
-  showModal
-} from '@decky/ui';
-import { Toast, Translator } from 'decky-plugin-framework';
-import { FC, useContext } from 'react';
-import { BsGearFill, BsPatchQuestionFill } from 'react-icons/bs';
-import { ImDropbox, ImGoogleDrive, ImHome, ImOnedrive } from 'react-icons/im';
+import { PanelSection, TextField } from '@decky/ui';
+import { Translator } from 'decky-plugin-framework';
+import { debounce } from 'lodash';
+import { FC, useCallback, useContext, useState } from 'react';
 
 import { GlobalContext } from '../contexts/globalContext';
-import { BackendUtils } from '../utils/backend';
 import { PluginSettings } from '../utils/pluginSettings';
 import { WhiteBoardUtil } from '../utils/whiteboard';
 
+const saveDirectory = debounce((newVal: string): void => {
+  PluginSettings.setRemoteDirectory(newVal);
+}, 1000);
+
+const saveHost = debounce((newVal: string): void => {
+  PluginSettings.setRemoteHost(newVal);
+}, 1000);
+
+const savePort = debounce((newVal: string): void => {
+  PluginSettings.setRemotePort(parseInt(newVal));
+}, 1000);
+
+const saveUser = debounce((newVal: string): void => {
+  PluginSettings.setRemoteUser(newVal);
+}, 1000);
+
+const savePassword = debounce((newVal: string): void => {
+  PluginSettings.setRemotePassword(newVal);
+}, 1000);
+
 export const ConfigureBackendPage: FC = () => {
-  const { provider } = useContext(GlobalContext);
+  const { syncInProgress } = useContext(GlobalContext);
 
-  const openConfig = async (prov: string): Promise<void> => {
-    const urlInterval = setInterval(async () => {
-      const url = await BackendUtils.getConfigUrl();
-      if (url) {
-        clearInterval(urlInterval);
-        Navigation.CloseSideMenus();
-        Navigation.NavigateToExternalWeb(url);
-      }
-    }, 150);
-    const resCode = await BackendUtils.configure(prov);
+  const [remoteHost, setRemoteHost] = useState(PluginSettings.getRemoteHost());
+  const [remoteUser, setRemoteUser] = useState(PluginSettings.getRemoteUser());
+  const [remotePassword, setRemotePassword] = useState(PluginSettings.getRemotePassword());
+  const [remotePort, setRemotePort] = useState(
+    PluginSettings.getRemotePort()?.toString() || undefined
+  );
+  const [remoteDir, setRemoteDir] = useState(PluginSettings.getRemoteDirectory());
 
-    if (resCode == 0) {
-      Toast.toast(Translator.translate('provider.configured'));
-      PluginSettings.setProvider(prov);
-      WhiteBoardUtil.setProvider(prov);
-      Navigation.NavigateToLibraryTab();
-    } else {
-      Toast.toast(Translator.translate('error.configuring.provider'));
+  const onDirChange = useCallback((newVal: string): void => {
+    setRemoteDir(() => newVal);
+    saveDirectory(newVal);
+    updateProvider();
+  }, []);
+
+  const onHostChange = useCallback((newVal: string): void => {
+    setRemoteHost(() => newVal);
+    saveHost(newVal);
+    updateProvider();
+  }, []);
+
+  const onPortChange = useCallback((newVal: string): void => {
+    setRemotePort(() => newVal);
+    savePort(newVal);
+    updateProvider();
+  }, []);
+
+  const onUserChange = useCallback((newVal: string): void => {
+    setRemoteUser(() => newVal);
+    saveUser(newVal);
+    updateProvider();
+  }, []);
+
+  const onPasswordChange = useCallback((newVal: string): void => {
+    setRemotePassword(() => newVal);
+    savePassword(newVal);
+    updateProvider();
+  }, []);
+
+  const updateProvider = function (): void {
+    let provider = undefined;
+    if (
+      remoteDir != undefined &&
+      remoteDir.trim().length > 0 &&
+      remoteHost != undefined &&
+      remoteHost.trim().length > 0 &&
+      remotePort != undefined &&
+      remotePort.trim().length > 0 &&
+      remoteUser != undefined &&
+      remoteUser.trim().length > 0 &&
+      remotePassword != undefined &&
+      remotePassword.trim().length > 0
+    ) {
+      provider = remoteHost;
     }
+    WhiteBoardUtil.setProvider(provider);
   };
 
   return (
-    <>
-      <PanelSection>
-        <strong>
-          {Translator.translate('currently.using')}: {provider}
-        </strong>
+    <div style={{ marginTop: '50px' }}>
+      <PanelSection title={Translator.translate('remote.host')}>
+        <TextField
+          disabled={syncInProgress}
+          value={remoteHost}
+          onChange={(e) => onHostChange(e.target.value)}
+          onBlur={(e) => onHostChange(e.target.value)}
+        />
       </PanelSection>
-      <PanelSection>
-        <small>{Translator.translate('click.providers')}</small>
-        <PanelSectionRow>
-          <ButtonItem onClick={() => openConfig('onedrive')} icon={<ImOnedrive />} label="OneDrive">
-            <BsGearFill />
-          </ButtonItem>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem
-            onClick={() => openConfig('drive')}
-            icon={<ImGoogleDrive />}
-            label="Google Drive (may not work if Google does not trust the Steam Browser)"
-          >
-            <BsGearFill />
-          </ButtonItem>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem onClick={() => openConfig('dropbox')} icon={<ImDropbox />} label="Dropbox">
-            <BsGearFill />
-          </ButtonItem>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem
-            onClick={() =>
-              showModal(
-                <ConfirmModal
-                  strTitle={Translator.translate('other.providers')}
-                  strDescription={
-                    <span style={{ whiteSpace: 'pre-wrap' }}>
-                      {Translator.translate('manually.desktop')}
-                    </span>
-                  }
-                />
-              )
-            }
-            icon={<ImHome />}
-            label={Translator.translate('other.advanced')}
-          >
-            <BsPatchQuestionFill />
-          </ButtonItem>
-        </PanelSectionRow>
+      <PanelSection title={Translator.translate('remote.port')}>
+        <TextField
+          disabled={syncInProgress}
+          value={remotePort}
+          onChange={(e) => onPortChange(e.target.value)}
+          onBlur={(e) => onPortChange(e.target.value)}
+        />
       </PanelSection>
-    </>
+      <PanelSection title={Translator.translate('remote.user')}>
+        <TextField
+          disabled={syncInProgress}
+          value={remoteUser}
+          onChange={(e) => onUserChange(e.target.value)}
+          onBlur={(e) => onUserChange(e.target.value)}
+        />
+      </PanelSection>
+      <PanelSection title={Translator.translate('remote.pasword')}>
+        <TextField
+          disabled={syncInProgress}
+          value={remotePassword}
+          type="password"
+          onChange={(e) => onPasswordChange(e.target.value)}
+          onBlur={(e) => onPasswordChange(e.target.value)}
+        />
+      </PanelSection>
+      <PanelSection title={Translator.translate('cloud.save.path')}>
+        <TextField
+          disabled={syncInProgress}
+          value={remoteDir}
+          onChange={(e) => onDirChange(e.target.value)}
+          onBlur={(e) => onDirChange(e.target.value)}
+        />
+      </PanelSection>
+    </div>
   );
 };

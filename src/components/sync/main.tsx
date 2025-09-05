@@ -3,8 +3,6 @@ import { Translator } from 'decky-plugin-framework';
 import { FC, useContext } from 'react';
 
 import { GlobalContext } from '../../contexts/globalContext';
-import { SyncMode } from '../../models/syncModes';
-import { Winner } from '../../models/winners';
 import { BackendUtils } from '../../utils/backend';
 import { PluginIcon } from '../icons/PluginIcon';
 import { ButtonWithIcon } from '../ui/buttonWithIcon';
@@ -37,7 +35,7 @@ export const SyncBlock: FC = () => {
             layout="below"
             disabled={syncInProgress || !provider || !connected}
             onClick={() => {
-              BackendUtils.doSynchronization(Winner.REMOTE, SyncMode.NORMAL);
+              BackendUtils.doSynchronization(true);
             }}
             icon={<PluginIcon className={syncInProgress ? 'dcs-rotate' : ''} />}
           >

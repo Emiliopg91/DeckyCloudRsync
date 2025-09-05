@@ -22,19 +22,8 @@ export class PluginSettings {
     }
   }
 
-  public static getProvider(): string | undefined {
-    return PluginSettings.settings.settings?.remote?.provider || undefined;
-  }
-
-  public static setProvider(value: string): void {
-    if (!PluginSettings.settings.settings?.remote) {
-      PluginSettings.createParents(PluginSettings.settings, 'settings.remote');
-    }
-    PluginSettings.settings.settings!.remote.provider = value;
-  }
-
   public static getRemoteDirectory(): string | undefined {
-    return PluginSettings.settings.settings?.remote?.directory || 'decky-cloud-sync';
+    return PluginSettings.settings.settings?.remote?.directory;
   }
 
   public static setRemoteDirectory(value: string): void {
@@ -42,6 +31,50 @@ export class PluginSettings {
       PluginSettings.createParents(PluginSettings.settings, 'settings.remote');
     }
     PluginSettings.settings.settings!.remote.directory = value;
+  }
+
+  public static getRemoteHost(): string | undefined {
+    return PluginSettings.settings.settings?.remote?.host;
+  }
+
+  public static setRemoteHost(value: string): void {
+    if (!PluginSettings.settings.settings?.remote) {
+      PluginSettings.createParents(PluginSettings.settings, 'settings.remote');
+    }
+    PluginSettings.settings.settings!.remote.host = value;
+  }
+
+  public static getRemoteUser(): string | undefined {
+    return PluginSettings.settings.settings?.remote?.user;
+  }
+
+  public static setRemoteUser(value: string): void {
+    if (!PluginSettings.settings.settings?.remote) {
+      PluginSettings.createParents(PluginSettings.settings, 'settings.remote');
+    }
+    PluginSettings.settings.settings!.remote.user = value;
+  }
+
+  public static getRemotePassword(): string | undefined {
+    return PluginSettings.settings.settings?.remote?.password;
+  }
+
+  public static setRemotePassword(value: string): void {
+    if (!PluginSettings.settings.settings?.remote) {
+      PluginSettings.createParents(PluginSettings.settings, 'settings.remote');
+    }
+    PluginSettings.settings.settings!.remote.password = value;
+  }
+
+  public static getRemotePort(): number | undefined {
+    return parseInt(PluginSettings.settings.settings?.remote?.port || '22');
+  }
+
+  public static setRemotePort(value: number): void {
+    if (!PluginSettings.settings.settings?.remote) {
+      PluginSettings.createParents(PluginSettings.settings, 'settings.remote');
+    }
+    PluginSettings.settings.settings!.remote.port = value.toString();
   }
 
   public static getEntries(): Record<string, Path> {

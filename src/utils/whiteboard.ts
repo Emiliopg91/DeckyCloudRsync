@@ -24,7 +24,7 @@ export class WhiteBoardUtil {
   public static getProvider(): string | undefined {
     return WhiteBoard.get('provider') || undefined;
   }
-  public static setProvider(value: string): void {
+  public static setProvider(value: string | undefined): void {
     WhiteBoard.set('provider', value);
   }
 
