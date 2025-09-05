@@ -23,6 +23,8 @@ class SyncManager:
     @staticmethod
     async def _async_sync(winner_remote: bool):
         PluginLogger.log("INFO", "=== STARTING SYNC ===")
+        start_time = time.time()
+        await decky.emit("syncStarted")
 
         if not os.path.exists(Constants.local_dir):
             os.makedirs(Constants.local_dir)
@@ -31,8 +33,6 @@ class SyncManager:
         if not os.path.exists(Constants.merge_dir):
             os.makedirs(Constants.merge_dir)
 
-        start_time = time.time()
-        await decky.emit("syncStarted")
         ok = True
         try:
             RSync.sync_from_remote()

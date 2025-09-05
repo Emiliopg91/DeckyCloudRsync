@@ -50,8 +50,8 @@ jobs:
       - name: Publish Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: DeckyCloudSync
-          path: out/DeckyCloudSync.tar.gz
+          name: DeckyCloudRsync
+          path: out/DeckyCloudRsync.tar.gz
 
       - name: Create and push tag
         env:
@@ -102,11 +102,11 @@ jobs:
       - name: publish to github release
         uses: softprops/action-gh-release@v1
         with:
-          files: /tmp/artifacts/DeckyCloudSync/DeckyCloudSync.tar.gz
+          files: /tmp/artifacts/DeckyCloudRsync/DeckyCloudRsync.tar.gz
           tag_name: ${{ env.VERSION }}
           name: ${{ env.VERSION }}
           body: |
-            DeckyCloudSync
+            DeckyCloudRsync
           draft: false
           prerelease: false
         env:
